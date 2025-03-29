@@ -39,8 +39,8 @@ try:
         print(f"- {budget['name']}")
         print(f"  Budget ID: {budget['id']}")
 
-    # Prompt to update .env file
-    print("\nPlease add your budget ID to the .env file as YNAB_BUDGET_ID")
+    # # Prompt to update .env file
+    # print("\nPlease add your budget ID to the .env file as YNAB_BUDGET_ID")
 
 except requests.exceptions.RequestException as e:
     print(f"Error connecting to YNAB API: {e}")
