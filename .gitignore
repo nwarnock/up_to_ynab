@@ -1,0 +1,16 @@
+# Virtual environment
+venv/
+
+# Environment variables (incl. API keys)
+.env
+
+# Python cache files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Logs
+*.log
+
+# Local config
+last_sync.json
