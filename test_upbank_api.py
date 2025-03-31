@@ -2,6 +2,12 @@ import os
 import requests
 from dotenv import load_dotenv
 
+"""
+Testing the Up Bank API connection
+Also downloading a list of accounts from which data may be imported
+"""
+
+
 # Load environment variables
 load_dotenv()
 
