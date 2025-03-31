@@ -2,6 +2,11 @@ import os
 import requests
 from dotenv import load_dotenv
 
+"""
+Testing the YNAB API connection
+Also retrieving a list of budgets and associated IDs which can be specified in order to upload transactions
+"""
+
 # Load environment variables
 load_dotenv()
 
@@ -39,8 +44,8 @@ try:
         print(f"- {budget['name']}")
         print(f"  Budget ID: {budget['id']}")
 
-    # # Prompt to update .env file
-    # print("\nPlease add your budget ID to the .env file as YNAB_BUDGET_ID")
+    # Prompt to update .env file
+    print("\nPlease add your budget ID to the .env file as YNAB_BUDGET_ID")
 
 except requests.exceptions.RequestException as e:
     print(f"Error connecting to YNAB API: {e}")
