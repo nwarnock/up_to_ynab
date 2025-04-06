@@ -19,7 +19,7 @@ if not UP_API_KEY:
 
 if not YNAB_ACCOUNT_ID:
     print("Error: YNAB_ACCOUNT_ID not found in environment variables.")
-    print("Please run get_ynab_accounts.py and add your account ID to the .env file.")
+    print("Please run 04-get_ynab_accounts.py and add your account ID to the .env file.")
     exit(1)
 
 # Set up API endpoint and headers
