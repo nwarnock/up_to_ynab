@@ -5,6 +5,12 @@ from dateutil.relativedelta import relativedelta
 from dotenv import load_dotenv
 from datetime import datetime
 
+"""
+This currently fetches transaction from one account, identified in .env
+- Note, actually it currently fetches transactions from all accounts, not limited to a particular account
+It should ultimately get transactions from all accounts sequentially and sync them with YNAB
+"""
+
 # Load environment variables
 load_dotenv()
 
@@ -77,7 +83,7 @@ transactions = get_transactions(since_date)
 
 # Print transaction information
 print(f"Found {len(transactions)} transactions in the last 30 days:")
-for i, tx in enumerate(transactions[:5], 1):  # Print first 5 transactions
+for i, tx in enumerate(transactions[:25], 1):  # Print first 5 transactions
     print(f"\nTransaction {i}:")
     print(f"ID: {tx['id']}")
     print(f"Date: {tx['attributes']['createdAt']}")

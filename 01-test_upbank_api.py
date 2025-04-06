@@ -4,7 +4,12 @@ from dotenv import load_dotenv
 
 """
 Testing the Up Bank API connection
-Also downloading a list of accounts from which data may be imported
+Also retrieving a list of accounts from which data may be imported
+Ultimately I'll want to import data from all accounts
+ - accounts outside of "Spending" and "2Up Spending" are savers, and can all be synced to Up Savings in YNAB
+    - ie. they act as one accounts
+For now, I've only added one account to .env; I'll end up passing them all from a function
+Worth noting that this field exists: "accountType":"SAVER" with the alternate being "TRANSACTIONAL"
 """
 
 
@@ -43,6 +48,7 @@ try:
     # Print account information
     for account in data['data']:
         print(f"- {account['attributes']['displayName']}: {account['attributes']['balance']['value']} {account['attributes']['balance']['currencyCode']}")
+        print(f"    - {account['attributes']['accountType']}: {account['id']}")
 
 except requests.exceptions.RequestException as e:
     print(f"Error connecting to Up Bank API: {e}")

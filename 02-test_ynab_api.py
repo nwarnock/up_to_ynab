@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 """
 Testing the YNAB API connection
 Also retrieving a list of budgets and associated IDs which can be specified in order to upload transactions
+As only one budget is current, I only need one budget ID; this should be added to .env
 """
 
 # Load environment variables

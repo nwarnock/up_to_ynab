@@ -2,6 +2,18 @@ import os
 import requests
 from dotenv import load_dotenv
 
+"""
+I'll need to match each Up Bank account to its corresponding YNAB account, roughly like this:
+Up Bank    YNAB
+2Up Spending    2 Up
+Spending    Nick Up: Direct debits
+remaining    2 Up Saver
+
+But I'll use their account IDs
+
+Other banks lack APIs an will need to be manually updated
+"""
+
 # Load environment variables
 load_dotenv()
 
@@ -16,7 +28,7 @@ if not YNAB_API_KEY:
 
 if not YNAB_BUDGET_ID:
     print("Error: YNAB_BUDGET_ID not found in environment variables.")
-    print("Please run test_ynab_api.py and add your budget ID to the .env file.")
+    print("Please run 02-test_ynab_api.py and add your budget ID to the .env file.")
     exit(1)
 
 # Set up API endpoint and headers
