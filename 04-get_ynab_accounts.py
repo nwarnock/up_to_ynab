@@ -32,7 +32,7 @@ if not YNAB_BUDGET_ID:
     exit(1)
 
 # Set up API endpoint and headers
-YNAB_API_URL = "https://api.youneedabudget.com/v1"
+YNAB_API_URL = "https://api.ynab.com/v1"
 headers = {
     "Authorization": f"Bearer {YNAB_API_KEY}",
     "Content-Type": "application/json"
