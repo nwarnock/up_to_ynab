@@ -4,6 +4,9 @@ venv/
 # Environment variables (incl. API keys)
 .env
 
+# Other sensitive resources
+resources.yaml
+
 # Python cache files
 __pycache__/
 *.py[cod]
