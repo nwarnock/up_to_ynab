@@ -57,10 +57,11 @@ def find_ynab_account_name_from_id(YNAB_account_id):
     # Print the response
     data = response.json()  # Obviously this returns a json
 
-    print(data['data']['account']['name'])
+    return(data['data']['account']['name'])
 
 
 current_ynab_account_name = find_ynab_account_name_from_id(YNAB_ACCOUNT_ID)
+print(f"Current YNAB account name is: \n  - {current_ynab_account_name}")
 
 
 # Try to get transaction info for given account
@@ -107,8 +108,8 @@ try:
     # print(reconciled_dates)
 
     last_reconciled_date = max(reconciled_dates)
-    print(f"Last reconciled on: {last_reconciled_date}")
-    # TODO: Add account name to final print statement
+    print(f"{current_ynab_account_name} was last reconciled on: {last_reconciled_date}")
+    # TODOx Add account name to final print statement
 
 
 except requests.exceptions.RequestException as e:
