@@ -1,6 +1,7 @@
 import os
 import requests
 from dotenv import load_dotenv
+from datetime import datetime
 
 """
 A function to find the most recent YNAB account reconciliation date, given an Up Bank account ID
@@ -40,22 +41,44 @@ try:
 
     # Check if request was successful
     response.raise_for_status()
+    # print(response.raise_for_status())
 
     # Print the response
-    data = response.json()
-    print("Successfully connected to YNAB API")
-    print(f"Found  {len(data['data']['transactions'])} transactions:")
+    data = response.json() # Obviously this returns a json
+    print(data)
+    print(data['data'])
+    print(data['data']['transactions']) # Individual transactions contained within {}
+    print(type(data['data']['transactions'])) # list
 
-    # Print transaction information
-    for transaction in data['data']['transactions']:
-        print(f"- {transaction['date']}")
-        print(f"- {transaction['amount']}")
-        print(f"- {transaction['cleared']}")
-        if transaction['cleared'] == "reconciled":
-            print("Reconciled")
-        print()
+    # Look at the first transaction
+    print(data['data']['transactions'][0]) # Print the first transaction
+    print(type(data['data']['transactions'][0])) # dict
+
+    # Look at elements of this dictionary
+    print(data['data']['transactions'][0]['date'])
+    print(type(data['data']['transactions'][0]['date'])) # str - note that this is not a date
+
+    current_date = data['data']['transactions'][0]['date']
+    print(f"Current date is: {current_date}")
+
+    formatted_date = datetime.strptime(current_date, '%Y-%m-%d')
+    print(f"Current datetime is: {formatted_date}")
+
+    # print("Successfully connected to YNAB API")
+    # print(f"Found  {len(data['data']['transactions'])} transactions:")
+
+    # # Print transaction information
+    # for transaction in data['data']['transactions']:
+    #     print(f"- {transaction['date']}")
+    #     print(f"- {transaction['amount']}")
+    #     print(f"- {transaction['cleared']}")
+    #     if transaction['cleared'] == "reconciled":
+    #         print("Reconciled")
+    #     print()
+
+    # Try to print dates of reconciled transactions
+    # for transaction in
 
 except requests.exceptions.RequestException as e:
     print(f"Error connecting to YNAB API: {e}")
-
 
