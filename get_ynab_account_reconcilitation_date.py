@@ -45,6 +45,7 @@ try:
 
     # Print the response
     data = response.json() # Obviously this returns a json
+    # print("Successfully connected to YNAB API")
     print(data)
     print(data['data'])
     print(data['data']['transactions']) # Individual transactions contained within {}
@@ -77,7 +78,21 @@ try:
     #     print()
 
     # Try to print dates of reconciled transactions
-    # for transaction in
+    # filter_date = datetime(2025, )
+    reconciled_dates = []
+
+    for transaction in data['data']['transactions']:
+        if(transaction['cleared'] == "reconciled"):
+            this_date = datetime.strptime(transaction['date'], '%Y-%m-%d')
+            print(f"This date is: {this_date}")
+            reconciled_dates.append(this_date)
+
+    print(reconciled_dates)
+
+    last_reconciled_date = max(reconciled_dates)
+    print(f"Last reconciled on: {last_reconciled_date}")
+
+
 
 except requests.exceptions.RequestException as e:
     print(f"Error connecting to YNAB API: {e}")
