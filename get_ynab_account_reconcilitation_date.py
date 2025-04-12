@@ -17,6 +17,7 @@ YNAB_API_KEY = os.getenv("YNAB_API_KEY")
 YNAB_BUDGET_ID = os.getenv("YNAB_BUDGET_ID")
 YNAB_ACCOUNT_ID = os.getenv("YNAB_ACCOUNT_ID")
 
+# Get Up API key, and an account id to use for testing
 UP_API_KEY = os.getenv("UP_API_KEY")
 UP_DEBITS_ACCOUNT_ID = os.getenv("UP_DEBITS_ACCOUNT_ID")
 
@@ -44,20 +45,28 @@ headers = {
     "Content-Type": "application/json"
 }
 
-def find_ynab_account_name_from_id(YNAB_account_id):
+def find_ynab_account_name_from_id(ynab_account_id):
+    """
+    Given a YNAB account id, returns its human-readable account name
+
+    Args:
+        ynab_account_id (str)
+
+    Returns:
+        str: YNAB account name corresponding to YNAB account ID
+    """
     # Make a request to the accounts endpoint
     response = requests.get(
-        f"{YNAB_API_URL}/budgets/{YNAB_BUDGET_ID}/accounts/{YNAB_ACCOUNT_ID}",
+        f"{YNAB_API_URL}/budgets/{YNAB_BUDGET_ID}/accounts/{ynab_account_id}",
         headers=headers)
 
     # Check if request was successful
     response.raise_for_status()
-    # print(response.raise_for_status()) # 'None', if successful
 
-    # Print the response
+    # Parse the response to obtain account name
     data = response.json()  # Obviously this returns a json
 
-    return(data['data']['account']['name'])
+    return data['data']['account']['name']
 
 
 current_ynab_account_name = find_ynab_account_name_from_id(YNAB_ACCOUNT_ID)
@@ -65,53 +74,55 @@ print(f"Current YNAB account name is: \n  - {current_ynab_account_name}")
 
 
 # Try to get transaction info for given account
-try:
-    # Make a request to the transactions endpoint
-    response = requests.get(f"{YNAB_API_URL}/budgets/{YNAB_BUDGET_ID}/accounts/{YNAB_ACCOUNT_ID}/transactions?since_date=2025-03-15", headers=headers)
+def determine_ynab_account_reconciliation_date(ynab_account_id):
+    try:
+        # Make a request to the transactions endpoint
+        response = requests.get(f"{YNAB_API_URL}/budgets/{YNAB_BUDGET_ID}/accounts/{ynab_account_id}/transactions?since_date=2025-03-15", headers=headers)
 
-    # Check if request was successful
-    response.raise_for_status()
-    # print(response.raise_for_status()) # 'None', if successful
+        # Check if request was successful
+        response.raise_for_status()
+        # print(response.raise_for_status()) # 'None', if successful
 
-    # Print the response
-    data = response.json() # Obviously this returns a json
-    # print("Successfully connected to YNAB API")
-    # print(data)
-    # print(data['data'])
-    # print(data['data']['transactions']) # Individual transactions contained within {}
-    # print(type(data['data']['transactions'])) # list
+        # Print the response
+        data = response.json() # Obviously this returns a json
+        # print("Successfully connected to YNAB API")
+        # print(data)
+        # print(data['data'])
+        # print(data['data']['transactions']) # Individual transactions contained within {}
+        # print(type(data['data']['transactions'])) # list
 
-    # # Look at the first transaction
-    # print(data['data']['transactions'][0]) # Print the first transaction
-    # print(type(data['data']['transactions'][0])) # dict
+        # # Look at the first transaction
+        # print(data['data']['transactions'][0]) # Print the first transaction
+        # print(type(data['data']['transactions'][0])) # dict
 
-    # # Look at elements of this dictionary
-    # print(data['data']['transactions'][0]['date'])
-    # print(type(data['data']['transactions'][0]['date'])) # str - note that this is not a date
+        # # Look at elements of this dictionary
+        # print(data['data']['transactions'][0]['date'])
+        # print(type(data['data']['transactions'][0]['date'])) # str - note that this is not a date
 
-    transaction_date = data['data']['transactions'][0]['date']
-    # print(f"Date of current transaction is: {transaction_date}")
+        transaction_date = data['data']['transactions'][0]['date']
+        # print(f"Date of current transaction is: {transaction_date}")
 
-    transaction_datetime = datetime.strptime(transaction_date, '%Y-%m-%d')
-    # print(f"datetime representation of current transaction is: {transaction_datetime}")
-
-
-    # Try to print dates of reconciled transactions
-    reconciled_dates = []
-
-    for transaction in data['data']['transactions']:
-        if transaction['cleared'] == "reconciled":
-            transaction_date = datetime.strptime(transaction['date'], '%Y-%m-%d')
-            # print(f"Date of current transaction is: {transaction_date}")
-            reconciled_dates.append(transaction_date)
-
-    # print(reconciled_dates)
-
-    last_reconciled_date = max(reconciled_dates)
-    print(f"{current_ynab_account_name} was last reconciled on: {last_reconciled_date}")
-    # TODOx Add account name to final print statement
+        # transaction_datetime = datetime.strptime(transaction_date, '%Y-%m-%d')
+        # print(f"datetime representation of current transaction is: {transaction_datetime}")
 
 
-except requests.exceptions.RequestException as e:
-    print(f"Error connecting to YNAB API: {e}")
+        # Try to print dates of reconciled transactions
+        reconciled_dates = []
 
+        for transaction in data['data']['transactions']:
+            if transaction['cleared'] == "reconciled":
+                transaction_date = datetime.strptime(transaction['date'], '%Y-%m-%d')
+                # print(f"Date of current transaction is: {transaction_date}")
+                reconciled_dates.append(transaction_date)
+
+        # print(reconciled_dates)
+
+        last_reconciled_date = max(reconciled_dates)
+        print(f"{current_ynab_account_name} was last reconciled on: {last_reconciled_date}")
+        # TODOx Add account name to final print statement
+
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error connecting to YNAB API: {e}")
+
+determine_ynab_account_reconciliation_date(YNAB_ACCOUNT_ID)
