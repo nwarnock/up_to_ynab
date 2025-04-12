@@ -1,5 +1,6 @@
 import os
 import requests
+import yaml
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -13,8 +14,16 @@ load_dotenv()
 
 # Get YNAB API key, budget ID and specific account ID from environment variables
 YNAB_API_KEY = os.getenv("YNAB_API_KEY")
-YNAB_BUDGET_ID= os.getenv("YNAB_BUDGET_ID")
+YNAB_BUDGET_ID = os.getenv("YNAB_BUDGET_ID")
 YNAB_ACCOUNT_ID = os.getenv("YNAB_ACCOUNT_ID")
+
+UP_API_KEY = os.getenv("UP_API_KEY")
+UP_DEBITS_ACCOUNT_ID = os.getenv("UP_DEBITS_ACCOUNT_ID")
+
+
+# Temporarily store specific Up account id here; later will pass from function call to generalise
+UP_ACCOUNT_ID = UP_DEBITS_ACCOUNT_ID
+
 
 # Check if API key exists
 if not YNAB_API_KEY:
@@ -35,9 +44,28 @@ headers = {
     "Content-Type": "application/json"
 }
 
+def find_ynab_account_name_from_id(YNAB_account_id):
+    # Make a request to the accounts endpoint
+    response = requests.get(
+        f"{YNAB_API_URL}/budgets/{YNAB_BUDGET_ID}/accounts/{YNAB_ACCOUNT_ID}",
+        headers=headers)
+
+    # Check if request was successful
+    response.raise_for_status()
+    # print(response.raise_for_status()) # 'None', if successful
+
+    # Print the response
+    data = response.json()  # Obviously this returns a json
+
+    print(data['data']['account']['name'])
+
+
+current_ynab_account_name = find_ynab_account_name_from_id(YNAB_ACCOUNT_ID)
+
+
 # Try to get transaction info for given account
 try:
-    # Make a request to the budgets endpoint
+    # Make a request to the transactions endpoint
     response = requests.get(f"{YNAB_API_URL}/budgets/{YNAB_BUDGET_ID}/accounts/{YNAB_ACCOUNT_ID}/transactions?since_date=2025-03-15", headers=headers)
 
     # Check if request was successful
@@ -79,9 +107,8 @@ try:
     # print(reconciled_dates)
 
     last_reconciled_date = max(reconciled_dates)
-    # print(f"Last reconciled on: {last_reconciled_date}")
-
-    return(last_reconciled_date)
+    print(f"Last reconciled on: {last_reconciled_date}")
+    # TODO: Add account name to final print statement
 
 
 except requests.exceptions.RequestException as e:
