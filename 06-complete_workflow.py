@@ -115,6 +115,7 @@ def determine_ynab_account_reconciliation_date(ynab_account_id):
             if transaction['cleared'] == "reconciled":
                 transaction_date = datetime.strptime(transaction['date'], '%Y-%m-%d')
                 # print(f"Date of current transaction is: {transaction_date}")
+                # TODO: Should the next line use reconciled_dates.extend()? What does that do?
                 reconciled_dates.append(transaction_date)
 
         # print(reconciled_dates)
@@ -128,5 +129,102 @@ def determine_ynab_account_reconciliation_date(ynab_account_id):
     except requests.exceptions.RequestException as e:
         print(f"Error connecting to YNAB API: {e}")
 
-test = determine_ynab_account_reconciliation_date(YNAB_ACCOUNT_ID)
-print(test)
+rec_date = determine_ynab_account_reconciliation_date(YNAB_ACCOUNT_ID)
+# print(test)
+
+
+
+"""
+Retrieve all transactions from the reconciliation date to present
+"""
+
+# Set up 'Up Bank' API endpoint and headers
+UP_API_URL = "https://api.up.com.au/api/v1"
+headers = {
+    "Authorization": f"Bearer {UP_API_KEY}",
+    "Content-Type": "application/json"
+}
+
+def get_up_account_transactions(up_account_id, since_date):
+    # Format the date properly for RFC 3339
+    # Convert to UTC and add the 'Z' suffix or proper timezone offset
+    if isinstance(since_date, datetime):
+        formatted_date = since_date.strftime("%Y-%m-%dT%H:%M:%S.%fZ")
+    else:
+        # If it's already a string, make sure it has timezone info
+        formatted_date = since_date if 'Z' in since_date or '+' in since_date else f"{since_date}Z"
+
+    transactions = []
+    page_url = f"{UP_API_URL}/accounts/{up_account_id}/transactions?filter[since]={formatted_date}"
+
+    while page_url:
+        try:
+            print(f"Fetching transactions from: {page_url}")
+            response = requests.get(page_url, headers=headers)
+            response.raise_for_status()
+
+            data = response.json()
+            transactions.extend(data["data"])
+
+            # Check if there's a next page
+            if "links" in data and "next" in data["links"] and data["links"]["next"]:
+                page_url = data["links"]["next"]
+            else:
+                page_url = None
+
+        except requests.exceptions.RequestException as e:
+            print(f"Error fetching transactions: {e}")
+            return []
+
+    return transactions
+
+
+# Get transactions
+transactions = get_up_account_transactions(UP_ACCOUNT_ID, rec_date)
+
+# Print transaction information
+print(f"Found {len(transactions)} transactions in the last 30 days:")
+for i, tx in enumerate(transactions[:5], 1):  # Print first 5 transactions
+    print(f"\nTransaction {i}:")
+    print(f"ID: {tx['id']}")
+    print(f"Date: {tx['attributes']['createdAt']}")
+    print(f"Description: {tx['attributes']['description']}")
+    print(f"Amount: {tx['attributes']['amount']['value']} {tx['attributes']['amount']['currencyCode']}")
+    print(f"Status: {tx['attributes']['status']}")
+    print(f"Account id: {tx['relationships']['account']['data']['id']}") # Current account id
+
+if len(transactions) > 5:
+    print(f"\n... and {len(transactions) - 5} more transactions")
+
+
+"""
+Convert Up Bank transactions to YNAB format
+"""
+
+ynab_transactions = []
+
+for i, tx in enumerate(transactions):
+    # Date
+    date = tx['attributes']['date']
+    # Dollar amount
+    currency_amount = tx['attributes']['amount']['value']
+    # Milliunit amount
+    millunit_amount = currency_amount * 1000
+    # import id = up bank transaction id
+    import_id = tx['id']
+    # Set a flag colour; static
+    flag_colour = "purple"
+    # Payee
+    payee_name = tx['attributes']['description']
+    # Approved; not sure if I'll use this
+    approved = False
+    # Category name: if this is not set, will YNAB try to auto-categorise?
+
+# TODO: Identify transfers to 2up / savers accounts, and assign correctly
+"""
+"account_name": "Up Dally",
+"payee_id": "3de496b6
+
+Note that transfer_account_id DOES match the ynab account id
+payee_id for transfers does NOT match the ynab account id
+"""
