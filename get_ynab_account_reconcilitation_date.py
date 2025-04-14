@@ -22,23 +22,24 @@ UP_API_KEY = os.getenv("UP_API_KEY")
 UP_DEBITS_ACCOUNT_ID = os.getenv("UP_DEBITS_ACCOUNT_ID")
 
 
-# Temporarily store specific Up account id here; later will pass from function call to generalise
+# Temporarily store specific Up account id here; later will pass from function call to generalise; ie loop over accounts
 UP_ACCOUNT_ID = UP_DEBITS_ACCOUNT_ID
 
 
-# Check if API key exists
+# Check that YNAB API key exists
 if not YNAB_API_KEY:
     print("Error: YNAB_API_KEY not found in environment variables")
     print("Add your YNAB API key to the .env file")
     exit(1)
 
-# Check if YNAB_ACCOUNT_ID exists
+# Check that YNAB_ACCOUNT_ID exists
 if not YNAB_ACCOUNT_ID:
     print("Error: YNAB_ACCOUNT not found in environment variables")
     print("Add your account ID as YNAB_ACCOUNT_ID in the .env file")
     exit(1)
 
-# Set up API endpoint and headers
+
+# Set up YNAB API endpoint and headers
 YNAB_API_URL = "https://api.ynab.com/v1"
 headers = {
     "Authorization": f"Bearer {YNAB_API_KEY}",
@@ -73,7 +74,8 @@ current_ynab_account_name = find_ynab_account_name_from_id(YNAB_ACCOUNT_ID)
 print(f"Current YNAB account name is: \n  - {current_ynab_account_name}")
 
 
-# Try to get transaction info for given account
+# Get transaction info for given account and determine reconciliation date
+# TODO: Remove hard-coded date; this was for testing and development only
 def determine_ynab_account_reconciliation_date(ynab_account_id):
     try:
         # Make a request to the transactions endpoint
@@ -99,14 +101,14 @@ def determine_ynab_account_reconciliation_date(ynab_account_id):
         # print(data['data']['transactions'][0]['date'])
         # print(type(data['data']['transactions'][0]['date'])) # str - note that this is not a date
 
-        transaction_date = data['data']['transactions'][0]['date']
+        # transaction_date = data['data']['transactions'][0]['date']
         # print(f"Date of current transaction is: {transaction_date}")
 
         # transaction_datetime = datetime.strptime(transaction_date, '%Y-%m-%d')
         # print(f"datetime representation of current transaction is: {transaction_datetime}")
 
 
-        # Try to print dates of reconciled transactions
+        # Print dates of reconciled transactions
         reconciled_dates = []
 
         for transaction in data['data']['transactions']:
@@ -121,8 +123,10 @@ def determine_ynab_account_reconciliation_date(ynab_account_id):
         print(f"{current_ynab_account_name} was last reconciled on: {last_reconciled_date}")
         # TODOx Add account name to final print statement
 
+        return last_reconciled_date
 
     except requests.exceptions.RequestException as e:
         print(f"Error connecting to YNAB API: {e}")
 
-determine_ynab_account_reconciliation_date(YNAB_ACCOUNT_ID)
+test = determine_ynab_account_reconciliation_date(YNAB_ACCOUNT_ID)
+print(test)
