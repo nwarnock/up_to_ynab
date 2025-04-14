@@ -83,13 +83,14 @@ transactions = get_transactions(since_date)
 
 # Print transaction information
 print(f"Found {len(transactions)} transactions in the last 30 days:")
-for i, tx in enumerate(transactions[:25], 1):  # Print first 5 transactions
+for i, tx in enumerate(transactions[:5], 1):  # Print first 5 transactions
     print(f"\nTransaction {i}:")
     print(f"ID: {tx['id']}")
     print(f"Date: {tx['attributes']['createdAt']}")
     print(f"Description: {tx['attributes']['description']}")
     print(f"Amount: {tx['attributes']['amount']['value']} {tx['attributes']['amount']['currencyCode']}")
     print(f"Status: {tx['attributes']['status']}")
+    print(f"Account id: {tx['relationships']['account']['data']['id']}")
 
 if len(transactions) > 5:
     print(f"\n... and {len(transactions) - 5} more transactions")
