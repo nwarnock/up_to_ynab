@@ -138,7 +138,7 @@ reconciliation_date = determine_ynab_account_reconciliation_date(YNAB_ACCOUNT_ID
 
 
 """
-Retrieve all transactions from the reconciliation date to present
+Retrieve all Up transactions from the YNAB reconciliation date to present
 """
 
 # Set up 'Up Bank' API endpoint and headers
