@@ -24,15 +24,17 @@ UP_DEBITS_ACCOUNT_ID = os.getenv("UP_DEBITS_ACCOUNT_ID")
 
 # Temporarily store specific Up account id here; later will pass from function call to generalise; ie loop over accounts
 UP_ACCOUNT_ID = UP_DEBITS_ACCOUNT_ID
+# TODO: probably need to make this work for account type as well
+# Or maybe if UP_ACCOUNT_ID is not set, then operate on savers accounts
 
 
-# Check that YNAB API key exists
+# Check that YNAB API key exists in .env file
 if not YNAB_API_KEY:
     print("Error: YNAB_API_KEY not found in environment variables")
     print("Add your YNAB API key to the .env file")
     exit(1)
 
-# Check that YNAB_ACCOUNT_ID exists
+# Check that YNAB_ACCOUNT_ID exists in .env file
 if not YNAB_ACCOUNT_ID:
     print("Error: YNAB_ACCOUNT not found in environment variables")
     print("Add your account ID as YNAB_ACCOUNT_ID in the .env file")
@@ -46,9 +48,10 @@ headers = {
     "Content-Type": "application/json"
 }
 
+
 def find_ynab_account_name_from_id(ynab_account_id):
     """
-    Given a YNAB account id, returns its human-readable account name
+    Given a YNAB account id, returns its human-readable account name for reporting purposes
 
     Args:
         ynab_account_id (str)
@@ -129,7 +132,7 @@ def determine_ynab_account_reconciliation_date(ynab_account_id):
     except requests.exceptions.RequestException as e:
         print(f"Error connecting to YNAB API: {e}")
 
-rec_date = determine_ynab_account_reconciliation_date(YNAB_ACCOUNT_ID)
+reconciliation_date = determine_ynab_account_reconciliation_date(YNAB_ACCOUNT_ID)
 # print(test)
 
 
@@ -179,11 +182,11 @@ def get_up_account_transactions(up_account_id, since_date):
     return transactions
 
 
-# Get transactions
-transactions = get_up_account_transactions(UP_ACCOUNT_ID, rec_date)
+# Get Up account transactions
+transactions = get_up_account_transactions(UP_ACCOUNT_ID, reconciliation_date)
 
-# Print transaction information
-print(f"Found {len(transactions)} transactions in the last 30 days:")
+# Print Up transaction information
+print(f"Found {len(transactions)} Up Bank transactions in the last 30 days:")
 for i, tx in enumerate(transactions[:5], 1):  # Print first 5 transactions
     print(f"\nTransaction {i}:")
     print(f"ID: {tx['id']}")
@@ -191,6 +194,10 @@ for i, tx in enumerate(transactions[:5], 1):  # Print first 5 transactions
     print(f"Description: {tx['attributes']['description']}")
     print(f"Amount: {tx['attributes']['amount']['value']} {tx['attributes']['amount']['currencyCode']}")
     print(f"Status: {tx['attributes']['status']}")
+
+    if tx['relationships']['transferAccount']['data'] != None:
+        print(tx['relationships']['transferAccount']['data']['id'])
+
     print(f"Account id: {tx['relationships']['account']['data']['id']}") # Current account id
 
 if len(transactions) > 5:
@@ -205,7 +212,7 @@ ynab_transactions = []
 
 for i, tx in enumerate(transactions):
     # Date
-    date = tx['attributes']['date']
+    # date = tx['attributes']['date']
     # Dollar amount
     currency_amount = tx['attributes']['amount']['value']
     # Milliunit amount
@@ -215,10 +222,17 @@ for i, tx in enumerate(transactions):
     # Set a flag colour; static
     flag_colour = "purple"
     # Payee
-    payee_name = tx['attributes']['description']
+    payee_name = tx['attributes']['description'] # eg. 'Transfer from 2Up Spending'
     # Approved; not sure if I'll use this
     approved = False
     # Category name: if this is not set, will YNAB try to auto-categorise?
+    # Payee id for transfers only, otherwise payee is payee_name = tx['attributes']['description']
+    if "Transfer from" in payee_name:
+        payee_id = tx['relationships']['transferAccount']['data']['id'] # Need to look up the YNAB equivalent account from yaml
+        print(payee_id)
+    # Do these two Up Bank payee ids match for transfers? No, one is human readable text, the other is a hash of some sort
+    # How does this transfer look from the other Up Bank account? Can I join them by the transaction id? Ie, not overwrite them
+
 
 # TODO: Identify transfers to 2up / savers accounts, and assign correctly
 """
@@ -227,4 +241,6 @@ for i, tx in enumerate(transactions):
 
 Note that transfer_account_id DOES match the ynab account id
 payee_id for transfers does NOT match the ynab account id
+
+transactions[0]['relationships']['transferAccount']
 """
