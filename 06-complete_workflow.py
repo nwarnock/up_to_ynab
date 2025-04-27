@@ -195,8 +195,13 @@ for i, tx in enumerate(transactions[:5], 1):  # Print first 5 transactions
     print(f"Amount: {tx['attributes']['amount']['value']} {tx['attributes']['amount']['currencyCode']}")
     print(f"Status: {tx['attributes']['status']}")
 
-    if tx['relationships']['transferAccount']['data'] != None:
-        print(tx['relationships']['transferAccount']['data']['id'])
+    # Deal with case of inter-account transfers
+    if tx['relationships']['transferAccount']['data'] is None:
+        print("Transfer account: None")
+    else:
+        print(f"Transfer account: {tx['relationships']['transferAccount']['data']['id']}")
+        # Note that different saver accounts have different account IDs
+        # TODO: Match transfer account id to known transaction account (from yaml) otherwise call it saver
 
     print(f"Account id: {tx['relationships']['account']['data']['id']}") # Current account id
 
