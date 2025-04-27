@@ -17,9 +17,10 @@ accounts = resources['accounts']
 # print(accounts[0])
 
 for account in accounts:
+    up_name = account['name']
     up_id = account['up']['id']
     ynab_id = account['ynab']['id']
-    print(f"Up ID: {up_id}; YNAB ID: {ynab_id}")
+    print(f"Up name: {up_name}; Up ID: {up_id}; YNAB ID: {ynab_id}")
 
 # How can I use it to find a YNAB account id, given an Up account id?
 query = accounts[0]['up']['id']
